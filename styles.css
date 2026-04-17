@@ -1,0 +1,13 @@
+body{font-family:Arial,sans-serif;background:#0f172a;color:#fff;margin:0}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+.hidden{display:none!important}
+.btn{padding:15px 30px;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;border:none}
+.primary-btn{background:#2563eb;color:#fff;width:100%}
+.secondary-btn{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.form-section{max-width:600px;margin:40px auto}
+
+
+#download-jpg-btn {
+  width: 100%;
+  margin-top: 12px;
+}
