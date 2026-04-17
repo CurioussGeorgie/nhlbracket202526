@@ -158,6 +158,11 @@ function attachUiListeners() {
       }
     });
   }
+
+  const downloadBtn = document.getElementById("download-jpg-btn");
+  if (downloadBtn) {
+    downloadBtn.addEventListener("click", downloadBracketJpg);
+  }
 }
 
 function getMatchParticipants(m) {
@@ -278,11 +283,16 @@ function updateSlot(slotEl, seedIndex, isSelected) {
 function updateSubmitButton() {
   isComplete = picks.every(p => p !== null);
   const btn = document.getElementById("submit-btn");
-  if (!btn) return;
+  if (btn) {
+    btn.disabled = !isComplete;
+    btn.classList.toggle("ready", isComplete);
+    btn.textContent = isComplete ? "Finish Bracket" : "Complete all picks";
+  }
 
-  btn.disabled = !isComplete;
-  btn.classList.toggle("ready", isComplete);
-  btn.textContent = isComplete ? "Finish Bracket" : "Complete all picks";
+  const downloadBtn = document.getElementById("download-jpg-btn");
+  if (downloadBtn) {
+    downloadBtn.disabled = !isComplete;
+  }
 }
 
 function finishBracket() {
@@ -319,8 +329,7 @@ function updateShareSummary() {
 }
 
 function saveState() {
-  const payload = { picks, games };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ picks, games }));
 }
 
 function loadSavedState() {
@@ -332,6 +341,50 @@ function loadSavedState() {
     if (Array.isArray(saved.games) && saved.games.length === 15) games = saved.games;
   } catch (e) {
     console.warn("Could not restore saved state", e);
+  }
+}
+
+async function downloadBracketJpg() {
+  const target = document.getElementById("capture-area");
+  if (!target || typeof html2canvas === "undefined") {
+    showError("Could not create JPG.");
+    return;
+  }
+
+  const downloadBtn = document.getElementById("download-jpg-btn");
+  const originalText = downloadBtn ? downloadBtn.textContent : "";
+
+  try {
+    if (downloadBtn) {
+      downloadBtn.disabled = true;
+      downloadBtn.textContent = "Creating JPG...";
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "visible";
+
+    const canvas = await html2canvas(target, {
+      backgroundColor: "#0f172a",
+      scale: 2,
+      useCORS: true,
+      scrollX: 0,
+      scrollY: 0
+    });
+
+    document.body.style.overflow = previousOverflow;
+
+    const link = document.createElement("a");
+    link.download = "my-nhl-bracket.jpg";
+    link.href = canvas.toDataURL("image/jpeg", 0.95);
+    link.click();
+  } catch (err) {
+    console.error(err);
+    showError("Could not create JPG.");
+  } finally {
+    if (downloadBtn) {
+      downloadBtn.disabled = !isComplete;
+      downloadBtn.textContent = originalText || "Download JPG";
+    }
   }
 }
 
