@@ -380,6 +380,32 @@ async function downloadBracketJpg() {
     clone.style.height = "auto";
     clone.style.overflow = "visible";
 
+    clone.querySelectorAll(".match-extras").forEach((extrasEl, index) => {
+      const originalSelect = target.querySelectorAll(".games-select")[index];
+      const selectedText = originalSelect && originalSelect.value
+        ? `${originalSelect.value} Games`
+        : "Series length?";
+
+      const label = document.createElement("div");
+      label.className = "games-select-jpg";
+      label.textContent = selectedText;
+      label.style.background = "rgba(255, 255, 255, 0.1)";
+      label.style.color = "#fff";
+      label.style.border = "1px solid rgba(255, 255, 255, 0.2)";
+      label.style.borderRadius = "6px";
+      label.style.fontSize = "0.8rem";
+      label.style.padding = "6px 12px";
+      label.style.fontFamily = "inherit";
+      label.style.width = "100%";
+      label.style.textAlign = "center";
+      label.style.boxSizing = "border-box";
+      label.style.minHeight = "32px";
+      label.style.lineHeight = "1.2";
+
+      extrasEl.innerHTML = "";
+      extrasEl.appendChild(label);
+    });
+
     sandbox.appendChild(clone);
     document.body.appendChild(sandbox);
 
