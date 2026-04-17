@@ -345,14 +345,16 @@ function loadSavedState() {
 }
 
 async function downloadBracketJpg() {
+  const wrapper = document.querySelector(".bracket-scroll-wrapper");
   const target = document.getElementById("capture-area");
-  if (!target || typeof html2canvas === "undefined") {
+  if (!wrapper || !target || typeof html2canvas === "undefined") {
     showError("Could not create JPG.");
     return;
   }
 
   const downloadBtn = document.getElementById("download-jpg-btn");
   const originalText = downloadBtn ? downloadBtn.textContent : "";
+  let sandbox = null;
 
   try {
     if (downloadBtn) {
@@ -360,18 +362,38 @@ async function downloadBracketJpg() {
       downloadBtn.textContent = "Creating JPG...";
     }
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "visible";
+    const fullWidth = Math.max(target.scrollWidth, target.offsetWidth, target.getBoundingClientRect().width);
+    const fullHeight = Math.max(target.scrollHeight, target.offsetHeight, target.getBoundingClientRect().height);
 
-    const canvas = await html2canvas(target, {
+    sandbox = document.createElement("div");
+    sandbox.style.position = "fixed";
+    sandbox.style.left = "-100000px";
+    sandbox.style.top = "0";
+    sandbox.style.padding = "24px";
+    sandbox.style.background = "#0f172a";
+    sandbox.style.zIndex = "-1";
+
+    const clone = target.cloneNode(true);
+    clone.style.width = fullWidth + "px";
+    clone.style.minWidth = fullWidth + "px";
+    clone.style.maxWidth = "none";
+    clone.style.height = "auto";
+    clone.style.overflow = "visible";
+
+    sandbox.appendChild(clone);
+    document.body.appendChild(sandbox);
+
+    const canvas = await html2canvas(clone, {
       backgroundColor: "#0f172a",
       scale: 2,
       useCORS: true,
       scrollX: 0,
-      scrollY: 0
+      scrollY: 0,
+      width: fullWidth,
+      height: fullHeight,
+      windowWidth: fullWidth + 48,
+      windowHeight: fullHeight + 48
     });
-
-    document.body.style.overflow = previousOverflow;
 
     const link = document.createElement("a");
     link.download = "my-nhl-bracket.jpg";
@@ -381,6 +403,9 @@ async function downloadBracketJpg() {
     console.error(err);
     showError("Could not create JPG.");
   } finally {
+    if (sandbox && sandbox.parentNode) {
+      sandbox.parentNode.removeChild(sandbox);
+    }
     if (downloadBtn) {
       downloadBtn.disabled = !isComplete;
       downloadBtn.textContent = originalText || "Download JPG";
